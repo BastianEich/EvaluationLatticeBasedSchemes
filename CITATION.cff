@@ -3,7 +3,7 @@ message: "If you use this software, please cite it as below."
 authors:
 - family-names: Eich
   given-names: Bastian
-title: "A framework to evaluate lattice-based schemes"
+title: "Providing a framework to evaluate lattice-based schemes"
 version: 1.0.0
 date-released: 2023-05-01
 url: "https://github.com/BastianEich/EvaluationLatticeBasedSchemes"
