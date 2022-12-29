@@ -4,7 +4,6 @@
 import numpy as np
 import scipy.stats as stats
 from hwcounter import count, count_end
-from sys import getsizeof
 
 
 # Speichern des aktuellen CPU-Zyklus nach Einbindung der Bibliotheken und vor Initialisierung der Parameter
@@ -37,17 +36,6 @@ B = np.mod(B, q)
 # Ermittlung der benötigten CPU-Zyklen nach abschließender Berechnung von B
 elapsed = count_end()-start
 
-# Ermittlung der Schlüsselgrößen
-size_s = getsizeof(s)
-size_A = getsizeof(A)
-size_B = getsizeof(B)
-
 # Schreiben der benötigten CPU-Zyklen in ein .txt-File
 with open('results_lwe_time.txt', 'a') as f:
   f.write('%d \n' % elapsed)
-
-# Schreiben der Schlüsselgrößen in ein .txt-File
-with open('results_lwe_size.txt', 'a') as g:
-  g.write('s: %d  ' % size_s)
-  g.write('A: %d  ' % size_A)
-  g.write('B: %d  \n' % size_B)
