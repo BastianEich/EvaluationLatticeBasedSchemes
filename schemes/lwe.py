@@ -29,7 +29,6 @@ s = stats.truncnorm.rvs((0 - xs_mu) / xs_sigma, (q - xs_mu) / xs_sigma, loc=xs_m
 # Creating and filling matrix 'e' with numbers according to x_e
 e = stats.truncnorm.rvs(-2, 2, loc=xe_mu, scale=xe_sigma, size=m*l).astype(int).reshape(m, l)
 
-
 # Calculating B = A * s + e mod q
 B = np.matmul(A, s)
 B = np.add(B, e)
