@@ -1,46 +1,48 @@
-# Bastian Eich - Masterthesis
-# MLWE - Schlüsselerzeugung
+## A Quantum-safe Public-Key-Algorithms Approach with Lattice-based Scheme
+## by Bastian Eich, Olaf Grote, Andreas Ahrens
+
+# Module Learning with Errors - Key generation
 
 import numpy as np
 import scipy.stats as stats
 from hwcounter import count, count_end
 
 
-# Speichern des aktuellen CPU-Zyklus nach Einbindung der Bibliotheken und vor Initialisierung der Parameter
+# Saving the current cpu-cycles after importing libraries and before initializing parameters
 start = count()
 
-m = 5  # Anzahl der Zeilen von 'A' und 'e' (= der in 'A' und 'e' pro Spalte n enthaltenen Polynome)
-k = 256   # Anzahl der Koeffizienten in den Polynomen in 'A', 's' und 'e' ((k-1) ist der höchste Grad der Polynome)
-n = 5   # Anzahl der Spalten von 'A' (= der nebeneinander stehenden Polynome) und Zeilen von 's'
-q = 16384  # Modul des Zahlenraums Z_q
+# Defining the relevant parameters
+m = 5       # Number of rows of matrices 'A' and 'e' (= polynomials per column n)
+k = 256     # Number of coefficients in the polynomials of matrices 'A', 's' and 'e' ((k-1) is the highest grade of polynomial)
+n = 5       # Number of columns of matrix 'A' and rows of matrix 's'
+q = 16384   # Module of 'Z_q'
 
-o = [1] + [0] * (k - 1) + [1]   # Polynomdivision durch 'o' stellt sicher, dass der höchste Koeffizient n-1 entspricht
+o = [1] + [0] * (k - 1) + [1]   # Polynomial division by 'o' ensures, that (n-1) stay the highest coefficient
 
-xs_mu, xs_sigma = (q/2), q    # Verschiebung/Stauchung der Normalenverteilung für x_s
-xe_mu, xe_sigma = 0, 2          # Verschiebung/Stauchung der Normalenverteilung für x_e
+xs_mu, xs_sigma = (q/2), q      # Shift/compression of gaussian distribution for 'x_s'
+xe_mu, xe_sigma = 0, 2          # Shift/compression of gaussian distribution for 'x_e'
 
-# Erzeugung und Befüllung von A mit pseudozufälligen Zahlen aus Z_q
+# Creating and filling matrix 'A' with pseudo-random numbers from Z_q
 A = np.random.choice(q, n*m*k).astype(int).reshape(n, m, k)
 
-# Erzeugung und Befüllung von s mit pseudozufälligen Zahlen aus x_s
+# Creating and filling matrix 's' with numbers according to x_s
 s = stats.truncnorm.rvs((0 - xs_mu) / xs_sigma, (q - xs_mu) / xs_sigma, loc=xs_mu, scale=xs_sigma, size=n*k).astype(int).reshape(n, k)
 
-# Erzeugung und Befüllung von s mit pseudozufälligen Zahlen aus x_e
+# Creating and filling matrix 'e' with numbers according to x_e
 e = stats.truncnorm.rvs(-2, 2, loc=xe_mu, scale=xe_sigma, size=m*k).astype(int).reshape(m, k)
 
-# Initialisierung der für die Schleife notwendigen Parameter
+# Initializing parameters necessary for while-loop
 i = 0
 B = np.zeros(m*k).astype(int).reshape(m, k)
 x = np.zeros(n*k).astype(int).reshape(n, k)
 
-# B = A * s + e mod q für jede Zeile jedes Arrays von A
+# Calculating B = A * s + e mod q for every row of every array in matrix 'A'
 while i < m:
     j = 0
     while j < n:
         b = np.polymul(A[j][i], s[j])%q 
-        # Sicherstellen, dass der maximale Grad des Polynoms nicht überschritten wird
         b = np.floor(np.polydiv(b, o)[1])
-        # Auffüllen der Matrix 'b' für den Fall, dass nach der Division 0x^3 oder 0x^2 im Polynom auftauchen
+        # Fill up matrix 'B' in case the first digits of the outcome are zeroes
         while len(b) < k:
             b = np.insert(b,0,0)    
         if j == 0:
@@ -51,9 +53,9 @@ while i < m:
     B[i] = (np.polyadd(x[j-1],e[i])%q).astype(int) 
     i += 1
 
-# Ermittlung der benötigten CPU-Zyklen nach abschließender Berechnung von B
+# Calculating the elapsed cpu-cycles
 elapsed = count_end()-start
 
-# Schreiben der benötigten CPU-Zyklen in ein .txt-File
+# Writing elapsed cpu-cycles in .txt-file
 with open('results_mlwe_time.txt', 'a') as f:
   f.write('%d \n' % elapsed)

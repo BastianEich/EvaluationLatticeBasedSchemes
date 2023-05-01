@@ -1,41 +1,43 @@
-# Bastian Eich - Masterthesis
-# LWE - Schlüsselerzeugung
+## A Quantum-safe Public-Key-Algorithms Approach with Lattice-based Scheme
+## by Bastian Eich, Olaf Grote, Andreas Ahrens
+
+# Learning with Errors - Key generation
 
 import numpy as np
 import scipy.stats as stats
 from hwcounter import count, count_end
 
 
-# Speichern des aktuellen CPU-Zyklus nach Einbindung der Bibliotheken und vor Initialisierung der Parameter
+# Saving the current cpu-cycles after importing libraries and before initializing parameters
 start = count()
 
-# Definition der Eingangsparameter
-m = 1088   # Anzahl der Zeilen von 'A' und Zeilen von 'e' 
-n = 2048   # Anzahl der Spalten von 'A' und Zeilen von 's'
-l = 512   # Anzahl der Spalten von 's' und 'e'
-q = 4096  # Modul des Zahlenraums Z_q
+# Defining the relevant parameters
+m = 1088    # Number of rows of matrices 'A' and 'e' 
+n = 2048    # Number of columns of matrix 'A' and rows of matrix 's'
+l = 512     # Number of columns of matrices 's' and 'e'
+q = 4096    # Module of 'Z_q'
 
-xs_mu, xs_sigma = (q/2), q    # Verschiebung/Stauchung der Normalenverteilung für x_s
-xe_mu, xe_sigma = 0, 2          # Verschiebung/Stauchung der Normalenverteilung für x_e
+xs_mu, xs_sigma = (q/2), q      # Shift/compression of gaussian distribution for 'x_s'
+xe_mu, xe_sigma = 0, 2          # Shift/compression of gaussian distribution for 'x_e'
 
-# Erzeugung und Befüllung von A mit pseudozufälligen Zahlen aus Z_q
+# Creating and filling matrix 'A' with pseudo-random numbers from Z_q
 A = np.random.choice(q, m*n).reshape(m, n)
 
-# Erzeugung und Befüllung von s mit pseudozufälligen Zahlen aus x_s
+# Creating and filling matrix 's' with numbers according to x_s
 s = stats.truncnorm.rvs((0 - xs_mu) / xs_sigma, (q - xs_mu) / xs_sigma, loc=xs_mu, scale=xs_sigma, size=n*l).astype(int).reshape(n, l)
 
-# Erzeugung und Befüllung von s mit pseudozufälligen Zahlen aus x_e
+# Creating and filling matrix 'e' with numbers according to x_e
 e = stats.truncnorm.rvs(-2, 2, loc=xe_mu, scale=xe_sigma, size=m*l).astype(int).reshape(m, l)
 
 
-# Berechnung von B = A * s + e mod q
+# Calculating B = A * s + e mod q
 B = np.matmul(A, s)
 B = np.add(B, e)
 B = np.mod(B, q)
 
-# Ermittlung der benötigten CPU-Zyklen nach abschließender Berechnung von B
+# Calculating the elapsed cpu-cycles
 elapsed = count_end()-start
 
-# Schreiben der benötigten CPU-Zyklen in ein .txt-File
+# Writing elapsed cpu-cycles in .txt-file
 with open('results_lwe_time.txt', 'a') as f:
   f.write('%d \n' % elapsed)
